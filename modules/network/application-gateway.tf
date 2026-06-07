@@ -3,9 +3,18 @@ resource "azurerm_application_gateway" "this" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
-    capacity = 2
+    name = "WAF_v2"
+    tier = "WAF_v2"
+  }
+  autoscale_configuration {
+    min_capacity = 1
+    max_capacity = 3
+  }
+  waf_configuration {
+    enabled          = true
+    firewall_mode    = "Prevention"
+    rule_set_type    = "OWASP"
+    rule_set_version = "3.2"
   }
   gateway_ip_configuration {
     name      = "appgw_ip_config"
@@ -17,16 +26,27 @@ resource "azurerm_application_gateway" "this" {
   }
   frontend_ip_configuration {
     name                 = "frontendIp"
-    public_ip_address_id = azurerm_public_ip.this.id
+    public_ip_address_id = azurerm_public_ip.application_gateway.id
   }
   backend_address_pool {
     name = "backendPool"
+  }
+  probe {
+    name                = "http-probe"
+    protocol            = "Http"
+    host                = "127.0.0.1"
+    path                = "/"
+    interval            = 30
+    timeout             = 30
+    unhealthy_threshold = 3
   }
   backend_http_settings {
     name                  = "httpSettings"
     cookie_based_affinity = "Disabled"
     port                  = 80
     protocol              = "Http"
+    request_timeout       = 30
+    probe_name            = "http-probe"
   }
   http_listener {
     name                           = "httpListener"

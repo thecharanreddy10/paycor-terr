@@ -1,35 +1,34 @@
-resource_group_name            = "PMI-QA-USE-SHR-RG"
-location                       = "East US"
+resource_group_name = "PMI-QA-USE-SHR-RG"
+location            = "East US"
 tags = {
   environment = "qa"
   project     = "PMI"
 }
-vnet_name                      = "PMI-QA-USE-VNET"
-address_space                  = ["10.0.0.0/16"]
-route_table_name               = "rt-shr"
-public_ip_name                 = "pip-shr"
-nat_gateway_name               = "nat-shr"
-load_balancer_name             = "lb-shr"
-application_gateway_name       = "agw-shr"
+vnet_name                       = "PMI-QA-USE-VNET"
+address_space                   = ["10.0.0.0/16"]
+route_table_name                = "rt-shr"
+public_ip_name                  = "pip-shr"
+nat_gateway_name                = "nat-shr"
+load_balancer_name              = "lb-shr"
+application_gateway_name        = "agw-shr"
 application_gateway_subnet_name = "AppGatewaySubnet"
-firewall_name                  = "afw-qa"
-firewall_subnet_name           = "AzureFirewallSubnet"
-bastion_name                   = "bastion-qa"
-bastion_subnet_name            = "AzureBastionSubnet"
-private_dns_zone_name          = "pdns-pmi.local"
-storage_account_name           = "pmiqausemigsa"
-key_vault_name                 = "kv-pmi-qa-use-shared"
-application_insights_name      = "appi-pmi-qa-app"
-log_analytics_name             = "law-pmi-qa-use"
-sql_server_name                = "sql-qa-shr"
-database_name                  = "sqldb-qa"
-sql_administrator_login        = "sqladminuser"
-sql_administrator_password     = "REPLACE_WITH_SQL_ADMIN_PASSWORD"
-policy_definition_name         = "pol-qa-baseline"
-initiative_name                = "pol-qa-baseline"
-assignment_name                = "pol-qa-baseline"
-recovery_vault_name            = "rsv-qa"
-asr_vault_name                 = "asr-qa"
+firewall_name                   = "afw-qa"
+firewall_subnet_name            = "AzureFirewallSubnet"
+bastion_name                    = "bastion-qa"
+bastion_subnet_name             = "AzureBastionSubnet"
+private_dns_zone_name           = "pdns-pmi.local"
+storage_account_name            = "pmiqausemigsa"
+key_vault_name                  = "kv-pmi-qa-use-shared"
+application_insights_name       = "appi-pmi-qa-app"
+log_analytics_name              = "law-pmi-qa-use"
+sql_server_name                 = "sql-qa-shr"
+database_name                   = "sqldb-qa"
+sql_administrator_login         = "pmi_qa_sql_admin"
+policy_definition_name          = "pol-qa-baseline"
+initiative_name                 = "pol-qa-baseline"
+assignment_name                 = "pol-qa-baseline"
+recovery_vault_name             = "rsv-qa"
+asr_vault_name                  = "asr-qa"
 replication_policies = [
   { name = "rp-web" },
   { name = "rp-app" },
@@ -72,21 +71,21 @@ subnets = [
   },
   {
     name                    = "AzureFirewallSubnet"
-    address_prefix          = "10.0.5.0/27"
+    address_prefix          = "10.0.5.0/26"
     nsg_name                = "nsg-shr-pvt"
     route_table_association = false
     subnet_type             = "service"
   },
   {
     name                    = "AzureBastionSubnet"
-    address_prefix          = "10.0.6.0/27"
+    address_prefix          = "10.0.6.0/26"
     nsg_name                = "nsg-shr-pvt"
     route_table_association = false
     subnet_type             = "service"
   },
   {
     name                    = "AppGatewaySubnet"
-    address_prefix          = "10.0.7.0/27"
+    address_prefix          = "10.0.7.0/26"
     nsg_name                = "nsg-shr-web"
     route_table_association = false
     subnet_type             = "service"

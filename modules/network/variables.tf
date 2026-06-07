@@ -26,7 +26,7 @@ variable "subnets" {
 
 variable "nsgs" {
   type = list(object({
-    name           = string
+    name = string
     security_rules = optional(list(object({
       name                       = string
       priority                   = number
@@ -87,10 +87,11 @@ variable "private_dns_zone_name" {
 
 variable "private_endpoints" {
   type = list(object({
-    name             = string
-    subnet_name      = string
-    target_resource_id = string
-    subresource_names = list(string)
+    name                  = string
+    subnet_name           = string
+    target_resource_id    = string
+    subresource_names     = list(string)
+    private_dns_zone_name = string
   }))
   default = []
 }

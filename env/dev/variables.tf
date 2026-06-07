@@ -7,7 +7,7 @@ variable "location" {
 }
 
 variable "tags" {
-  type = map(string)
+  type    = map(string)
   default = {}
 }
 
@@ -31,7 +31,7 @@ variable "subnets" {
 
 variable "nsgs" {
   type = list(object({
-    name           = string
+    name = string
     security_rules = optional(list(object({
       name                       = string
       priority                   = number
@@ -116,11 +116,16 @@ variable "database_name" {
 
 variable "sql_administrator_login" {
   type = string
-  default = "sqladminuser"
 }
 
 variable "sql_administrator_password" {
-  type = string
+  type      = string
+  sensitive = true
+}
+
+variable "monitoring_retention_in_days" {
+  type    = number
+  default = 90
 }
 
 variable "vm_definitions" {
@@ -142,13 +147,15 @@ variable "backup_policies" {
   type = list(object({
     name = string
   }))
+  default = []
 }
 
 variable "backup_protected_vms" {
   type = list(object({
-    vm_name           = string
+    vm_name            = string
     backup_policy_name = string
   }))
+  default = []
 }
 
 variable "asr_vault_name" {

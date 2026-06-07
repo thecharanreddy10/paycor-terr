@@ -12,12 +12,9 @@ resource "azurerm_private_endpoint" "this" {
     subresource_names              = each.value.subresource_names
     is_manual_connection           = false
   }
-}
 
-resource "azurerm_private_dns_zone_group" "this" {
-  for_each = azurerm_private_endpoint.this
-
-  name                 = "zonegroup-${each.key}"
-  private_endpoint_id  = each.value.id
-  private_dns_zone_id  = azurerm_private_dns_zone.this.id
+  private_dns_zone_group {
+    name                 = "zonegroup-${each.key}"
+    private_dns_zone_ids = [azurerm_private_dns_zone.private_endpoint[each.value.private_dns_zone_name].id]
+  }
 }

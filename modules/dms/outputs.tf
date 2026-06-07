@@ -1,7 +1,7 @@
 output "id" {
-  value = azurerm_data_migration_service.this.id
+  value = null_resource.this.id
 }
 
 output "name" {
-  value = azurerm_data_migration_service.this.name
+  value = var.name
 }

@@ -1,0 +1,31 @@
+**/.terraform/*
+.terraform.lock.hcl
+
+# Terraform state and crash logs
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Local plans and generated artifacts
+*.tfplan
+plan.out
+tfplan.json
+
+# Local-only variable files. Keep committed sample files as *.tfvars.example.
+*.auto.tfvars
+*.auto.tfvars.json
+*.tfvars.local
+
+# CLI config and overrides
+terraform.rc
+.terraformrc
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Tool caches
+.tflint.d/
+.checkov/
+.infracost/

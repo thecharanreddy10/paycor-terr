@@ -5,9 +5,11 @@ resource "azurerm_lb" "this" {
   sku                 = "Standard"
   frontend_ip_configuration {
     name                 = "LoadBalancerFrontEnd"
-    public_ip_address_id = azurerm_public_ip.this.id
+    public_ip_address_id = azurerm_public_ip.load_balancer.id
   }
-  backend_address_pool {
-    name = "BackendPool"
-  }
+}
+
+resource "azurerm_lb_backend_address_pool" "this" {
+  loadbalancer_id = azurerm_lb.this.id
+  name            = "BackendPool"
 }

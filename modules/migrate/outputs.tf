@@ -1,7 +1,7 @@
 output "migrate_project_id" {
-  value = azurerm_migrate_project.this.id
+  value = null_resource.migrate_project.id
 }
 
 output "migration_appliance_id" {
-  value = azurerm_migrate_appliance.this.id
+  value = null_resource.migration_appliance.id
 }

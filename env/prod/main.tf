@@ -2,10 +2,14 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.0"
+      version = "~> 3.116"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
     }
   }
-  required_version = ">= 1.3.0"
+  required_version = "~> 1.8"
 }
 
 provider "azurerm" {
@@ -22,24 +26,24 @@ module "rg" {
 module "network" {
   source = "../../modules/network"
 
-  resource_group_name           = module.rg.name
-  location                      = var.location
-  vnet_name                     = var.vnet_name
-  address_space                 = var.address_space
-  subnets                       = var.subnets
-  nsgs                          = var.nsgs
-  route_table_name              = var.route_table_name
-  public_ip_name                = var.public_ip_name
-  nat_gateway_name              = var.nat_gateway_name
-  load_balancer_name            = var.load_balancer_name
-  application_gateway_name      = var.application_gateway_name
+  resource_group_name             = module.rg.name
+  location                        = var.location
+  vnet_name                       = var.vnet_name
+  address_space                   = var.address_space
+  subnets                         = var.subnets
+  nsgs                            = var.nsgs
+  route_table_name                = var.route_table_name
+  public_ip_name                  = var.public_ip_name
+  nat_gateway_name                = var.nat_gateway_name
+  load_balancer_name              = var.load_balancer_name
+  application_gateway_name        = var.application_gateway_name
   application_gateway_subnet_name = var.application_gateway_subnet_name
-  firewall_name                 = var.firewall_name
-  firewall_subnet_name          = var.firewall_subnet_name
-  bastion_name                  = var.bastion_name
-  bastion_subnet_name           = var.bastion_subnet_name
-  private_dns_zone_name         = var.private_dns_zone_name
-  private_endpoints             = local.private_endpoints
+  firewall_name                   = var.firewall_name
+  firewall_subnet_name            = var.firewall_subnet_name
+  bastion_name                    = var.bastion_name
+  bastion_subnet_name             = var.bastion_subnet_name
+  private_dns_zone_name           = var.private_dns_zone_name
+  private_endpoints               = local.private_endpoints
 }
 
 module "storage" {
@@ -57,12 +61,12 @@ module "key_vault" {
 }
 
 module "sql" {
-  source                    = "../../modules/sql"
-  resource_group_name       = module.rg.name
-  location                  = var.location
-  server_name               = var.sql_server_name
-  database_name             = var.database_name
-  administrator_login       = var.sql_administrator_login
+  source                       = "../../modules/sql"
+  resource_group_name          = module.rg.name
+  location                     = var.location
+  server_name                  = var.sql_server_name
+  database_name                = var.database_name
+  administrator_login          = var.sql_administrator_login
   administrator_login_password = var.sql_administrator_password
 }
 
@@ -75,31 +79,32 @@ module "vm" {
 }
 
 module "monitoring" {
-  source              = "../../modules/monitoring"
-  resource_group_name = module.rg.name
-  location            = var.location
-  workspace_name      = var.log_analytics_name
+  source                    = "../../modules/monitoring"
+  resource_group_name       = module.rg.name
+  location                  = var.location
+  workspace_name            = var.log_analytics_name
   application_insights_name = var.application_insights_name
-  alert_rules         = local.alert_rules
-  diagnostic_settings = local.diagnostic_settings
+  retention_in_days         = var.monitoring_retention_in_days
+  alert_rules               = local.alert_rules
+  diagnostic_settings       = local.diagnostic_settings
 }
 
 module "policy" {
-  source                   = "../../modules/policy"
-  policy_definition_name   = "pol-prd-baseline"
-  initiative_name          = "pol-prd-baseline"
-  assignment_name          = "pol-prd-baseline"
-  scope                    = module.rg.id
+  source                 = "../../modules/policy"
+  policy_definition_name = "pol-prd-baseline"
+  initiative_name        = "pol-prd-baseline"
+  assignment_name        = "pol-prd-baseline"
+  scope                  = module.rg.id
 }
 
 module "backup" {
-  source              = "../../modules/backup"
-  resource_group_name = module.rg.name
-  location            = var.location
-  recovery_vault_name = "rsv-prd"
-  backup_policies     = var.backup_policies
-  protected_vms       = local.backup_protected_vms
-  asr_vault_name      = var.asr_vault_name
+  source               = "../../modules/backup"
+  resource_group_name  = module.rg.name
+  location             = var.location
+  recovery_vault_name  = "rsv-prd"
+  backup_policies      = var.backup_policies
+  protected_vms        = local.backup_protected_vms
+  asr_vault_name       = var.asr_vault_name
   replication_policies = var.replication_policies
 }
 
@@ -124,22 +129,25 @@ module "dms" {
 locals {
   private_endpoints = [
     {
-      name                = "pep-kv"
-      subnet_name         = "snet-pvt-edp"
-      target_resource_id  = module.key_vault.id
-      subresource_names   = ["vault"]
+      name                  = "pep-kv"
+      subnet_name           = "snet-pvt-edp"
+      target_resource_id    = module.key_vault.id
+      subresource_names     = ["vault"]
+      private_dns_zone_name = "privatelink.vaultcore.azure.net"
     },
     {
-      name                = "pep-sql"
-      subnet_name         = "snet-pvt-edp"
-      target_resource_id  = module.sql.server_id
-      subresource_names   = ["sqlServer"]
+      name                  = "pep-sql"
+      subnet_name           = "snet-pvt-edp"
+      target_resource_id    = module.sql.server_id
+      subresource_names     = ["sqlServer"]
+      private_dns_zone_name = "privatelink.database.windows.net"
     },
     {
-      name                = "pep-storage"
-      subnet_name         = "snet-pvt-edp"
-      target_resource_id  = module.storage.id
-      subresource_names   = ["blob"]
+      name                  = "pep-storage"
+      subnet_name           = "snet-pvt-edp"
+      target_resource_id    = module.storage.id
+      subresource_names     = ["blob"]
+      private_dns_zone_name = "privatelink.blob.core.windows.net"
     },
   ]
 
@@ -172,14 +180,17 @@ locals {
     {
       name               = "diag-kv"
       target_resource_id = module.key_vault.id
+      log_categories     = ["AuditEvent"]
     },
     {
       name               = "diag-storage"
-      target_resource_id = module.storage.id
+      target_resource_id = "${module.storage.id}/blobServices/default"
+      log_categories     = ["StorageRead", "StorageWrite", "StorageDelete"]
     },
     {
       name               = "diag-law"
       target_resource_id = module.sql.server_id
+      log_categories     = ["SQLSecurityAuditEvents"]
     },
   ]
 

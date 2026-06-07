@@ -1,0 +1,175 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - env/**
+      - modules/**
+      - azure-pipelines.yml
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - env/**
+      - modules/**
+      - azure-pipelines.yml
+
+parameters:
+  - name: environment
+    displayName: Environment
+    type: string
+    default: dev
+    values:
+      - dev
+      - qa
+      - uat
+      - prod
+  - name: action
+    displayName: Terraform action
+    type: string
+    default: plan
+    values:
+      - plan
+      - apply
+
+variables:
+  terraformVersion: '1.8.5'
+  workingDirectory: '$(System.DefaultWorkingDirectory)/env/${{ parameters.environment }}'
+  azureServiceConnection: 'REPLACE_WITH_AZURE_SERVICE_CONNECTION_NAME'
+
+stages:
+  - stage: validate
+    displayName: Validate Terraform
+    jobs:
+      - job: validate
+        displayName: Format and validate
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            clean: true
+
+          - bash: |
+              set -euo pipefail
+              curl -sSLo terraform.zip "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
+              unzip -o terraform.zip
+              sudo mv terraform /usr/local/bin/terraform
+              terraform version
+            displayName: Install Terraform
+
+          - bash: terraform fmt -check -recursive
+            displayName: Terraform format check
+
+          - bash: |
+              set -euo pipefail
+              terraform init -backend=false -input=false
+              terraform validate
+            displayName: Terraform validate
+            workingDirectory: $(workingDirectory)
+
+  - stage: plan
+    displayName: Terraform plan
+    dependsOn: validate
+    jobs:
+      - job: plan
+        displayName: Plan ${{ parameters.environment }}
+        pool:
+          vmImage: ubuntu-latest
+        variables:
+          - group: terr-v2-secrets
+        steps:
+          - checkout: self
+            clean: true
+
+          - bash: |
+              set -euo pipefail
+              curl -sSLo terraform.zip "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
+              unzip -o terraform.zip
+              sudo mv terraform /usr/local/bin/terraform
+              terraform version
+            displayName: Install Terraform
+
+          - task: AzureCLI@2
+            displayName: Terraform init and plan
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              workingDirectory: $(workingDirectory)
+              inlineScript: |
+                set -euo pipefail
+                terraform init -input=false
+                terraform plan -input=false -out=tfplan
+            env:
+              TF_IN_AUTOMATION: 'true'
+              TF_VAR_sql_administrator_password: $(sqlAdministratorPassword)
+
+          - publish: $(workingDirectory)/tfplan
+            artifact: tfplan-${{ parameters.environment }}
+            displayName: Publish Terraform plan
+
+  - stage: apply_approval
+    displayName: Manual approval
+    dependsOn: plan
+    condition: and(succeeded(), eq('${{ parameters.action }}', 'apply'), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: wait_for_approval
+        displayName: Approve apply
+        pool: server
+        timeoutInMinutes: 1440
+        steps:
+          - task: ManualValidation@0
+            timeoutInMinutes: 1440
+            inputs:
+              instructions: 'Review the Terraform plan artifact for ${{ parameters.environment }} before approving apply.'
+              onTimeout: reject
+
+  - stage: apply
+    displayName: Terraform apply
+    dependsOn: apply_approval
+    condition: and(succeeded(), eq('${{ parameters.action }}', 'apply'), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - deployment: apply
+        displayName: Apply ${{ parameters.environment }}
+        environment: terr-v2-${{ parameters.environment }}
+        pool:
+          vmImage: ubuntu-latest
+        variables:
+          - group: terr-v2-secrets
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  clean: true
+
+                - download: current
+                  artifact: tfplan-${{ parameters.environment }}
+
+                - bash: |
+                    set -euo pipefail
+                    curl -sSLo terraform.zip "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
+                    unzip -o terraform.zip
+                    sudo mv terraform /usr/local/bin/terraform
+                    terraform version
+                  displayName: Install Terraform
+
+                - task: AzureCLI@2
+                  displayName: Terraform apply saved plan
+                  inputs:
+                    azureSubscription: $(azureServiceConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    workingDirectory: $(workingDirectory)
+                    inlineScript: |
+                      set -euo pipefail
+                      terraform init -input=false
+                      cp "$(Pipeline.Workspace)/tfplan-${{ parameters.environment }}/tfplan" ./tfplan
+                      terraform apply -input=false -auto-approve tfplan
+                  env:
+                    TF_IN_AUTOMATION: 'true'
+                    TF_VAR_sql_administrator_password: $(sqlAdministratorPassword)

@@ -16,9 +16,9 @@ variable "database_name" {
 
 variable "administrator_login" {
   type = string
-  default = "sqladminuser"
 }
 
 variable "administrator_login_password" {
-  type = string
+  type      = string
+  sensitive = true
 }

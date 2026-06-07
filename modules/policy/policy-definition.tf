@@ -3,15 +3,25 @@ resource "azurerm_policy_definition" "this" {
   policy_type  = "Custom"
   mode         = "Indexed"
   display_name = "PMI baseline policy definition"
-  policy_rule  = <<POLICY
-{
-  "if": {
-    "field": "tags",
-    "exists": "false"
-  },
-  "then": {
-    "effect": "audit"
-  }
-}
-POLICY
+  description  = "Audits resources that do not have required baseline tags."
+
+  parameters = jsonencode({
+    requiredTagName = {
+      type = "String"
+      metadata = {
+        displayName = "Required tag name"
+      }
+      defaultValue = "environment"
+    }
+  })
+
+  policy_rule = jsonencode({
+    if = {
+      field  = "[concat('tags[', parameters('requiredTagName'), ']')]"
+      exists = "false"
+    }
+    then = {
+      effect = "audit"
+    }
+  })
 }

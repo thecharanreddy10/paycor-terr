@@ -1,12 +1,14 @@
 resource "azurerm_linux_virtual_machine" "this" {
   for_each = { for vm in var.vm_definitions : vm.name => vm }
 
-  name                  = each.key
-  location              = var.location
-  resource_group_name   = var.resource_group_name
-  network_interface_ids = [azurerm_network_interface.this[each.key].id]
-  size                  = each.value.vm_size
-  admin_username        = each.value.admin_username
+  name                            = each.key
+  location                        = var.location
+  resource_group_name             = var.resource_group_name
+  network_interface_ids           = [azurerm_network_interface.this[each.key].id]
+  size                            = each.value.vm_size
+  admin_username                  = each.value.admin_username
+  computer_name                   = each.value.computer_name
+  disable_password_authentication = true
 
   admin_ssh_key {
     username   = each.value.admin_username
@@ -23,9 +25,11 @@ resource "azurerm_linux_virtual_machine" "this" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Premium_LRS"
-    managed_disk_id      = azurerm_managed_disk.this[each.key].id
   }
 
-  computer_name  = each.value.computer_name
-  disable_password_authentication = true
+  identity {
+    type = "SystemAssigned"
+  }
+
+  boot_diagnostics {}
 }

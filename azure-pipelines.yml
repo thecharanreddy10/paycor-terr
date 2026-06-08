@@ -53,13 +53,10 @@ stages:
           - checkout: self
             clean: true
 
-          - bash: |
-              set -euo pipefail
-              curl -sSLo terraform.zip "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
-              unzip -o terraform.zip
-              sudo mv terraform /usr/local/bin/terraform
-              terraform version
+          - task: TerraformInstaller@1
             displayName: Install Terraform
+            inputs:
+              terraformVersion: $(terraformVersion)
 
           - bash: terraform fmt -check -recursive
             displayName: Terraform format check
@@ -85,13 +82,10 @@ stages:
           - checkout: self
             clean: true
 
-          - bash: |
-              set -euo pipefail
-              curl -sSLo terraform.zip "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
-              unzip -o terraform.zip
-              sudo mv terraform /usr/local/bin/terraform
-              terraform version
+          - task: TerraformInstaller@1
             displayName: Install Terraform
+            inputs:
+              terraformVersion: $(terraformVersion)
 
           - task: AzureCLI@2
             displayName: Terraform init and plan
@@ -150,13 +144,10 @@ stages:
                 - download: current
                   artifact: tfplan-${{ parameters.environment }}
 
-                - bash: |
-                    set -euo pipefail
-                    curl -sSLo terraform.zip "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
-                    unzip -o terraform.zip
-                    sudo mv terraform /usr/local/bin/terraform
-                    terraform version
+                - task: TerraformInstaller@1
                   displayName: Install Terraform
+                  inputs:
+                    terraformVersion: $(terraformVersion)
 
                 - task: AzureCLI@2
                   displayName: Terraform apply saved plan

@@ -1,92 +1,92 @@
-resource_group_name = "PMI-DEV-USE-SHR-RG"
-location            = "East US"
+resource_group_name = "PAY-UAT-EUS2-APP-RG"
+location            = "East US 2"
 tags = {
   environment = "dev"
-  project     = "PMI"
+  project     = "Paycor"
 }
-vnet_name                       = "PMI-DEV-USE-VNET"
+vnet_name                       = "PAY-UAT-EUS2-VNET"
 address_space                   = ["10.0.0.0/16"]
-route_table_name                = "rt-shr"
-public_ip_name                  = "pip-shr"
-nat_gateway_name                = "nat-shr"
-load_balancer_name              = "lb-shr"
-application_gateway_name        = "agw-shr"
+route_table_name                = "rt-app"
+public_ip_name                  = "pip-app"
+nat_gateway_name                = "nat-app"
+load_balancer_name              = "lb-app"
+application_gateway_name        = "agw-app"
 application_gateway_subnet_name = "AppGatewaySubnet"
-firewall_name                   = "afw-dev"
+firewall_name                   = "afw-uat"
 firewall_subnet_name            = "AzureFirewallSubnet"
-bastion_name                    = "bastion-dev"
+bastion_name                    = "bastion-uat"
 bastion_subnet_name             = "AzureBastionSubnet"
-private_dns_zone_name           = "pdns-pmi.local"
-storage_account_name            = "pmidevusemigsa"
-key_vault_name                  = "kv-pmi-dev-use-shared"
-application_insights_name       = "appi-pmi-dev-app"
-log_analytics_name              = "law-pmi-dev-use"
-sql_server_name                 = "sql-dev-shr"
-database_name                   = "sqldb-dev"
-sql_administrator_login         = "pmi_dev_sql_admin"
-policy_definition_name          = "pol-dev-baseline"
-initiative_name                 = "pol-dev-baseline"
-assignment_name                 = "pol-dev-baseline"
-recovery_vault_name             = "rsv-dev"
-asr_vault_name                  = "asr-dev"
+private_dns_zone_name           = "pdns-paycor.local"
+storage_account_name            = "payuateus2appsa"
+key_vault_name                  = "kv-pay-uat-eus2-app"
+application_insights_name       = "appi-pay-uat-app"
+log_analytics_name              = "law-pay-uat-eus2"
+sql_server_name                 = "sql-uat-app"
+database_name                   = "sqldb-app"
+sql_administrator_login         = "paycor_sql_admin"
+policy_definition_name          = "pol-uat-baseline"
+initiative_name                 = "pol-uat-baseline"
+assignment_name                 = "pol-uat-baseline"
+recovery_vault_name             = "rsv-uat"
+asr_vault_name                  = "asr-uat"
 replication_policies = [
   { name = "rp-web" },
   { name = "rp-app" },
   { name = "rp-db" },
 ]
-migrate_project_name   = "mig-pmi-infra-dev"
-migrate_appliance_name = "migapp-dev-01"
+migrate_project_name   = "mig-paycor-infra"
+migrate_appliance_name = "migapp-01"
 migration_wave_name    = "wave-01"
 cutover_batch_name     = "batch-01"
-dms_name               = "dms-pmi-dev"
+dms_name               = "dms-paycor"
 
 subnets = [
   {
     name                    = "snet-web"
     address_prefix          = "10.0.1.0/24"
-    nsg_name                = "nsg-shr-web"
+    nsg_name                = "nsg-app-web"
     route_table_association = true
     subnet_type             = "application"
   },
   {
     name                    = "snet-app"
     address_prefix          = "10.0.2.0/24"
-    nsg_name                = "nsg-shr-app"
+    nsg_name                = "nsg-app-app"
     route_table_association = true
     subnet_type             = "application"
   },
   {
     name                    = "snet-db"
     address_prefix          = "10.0.3.0/24"
-    nsg_name                = "nsg-shr-db"
+    nsg_name                = "nsg-app-db"
     route_table_association = true
     subnet_type             = "database"
   },
   {
     name                    = "snet-pvt-edp"
     address_prefix          = "10.0.4.0/24"
-    nsg_name                = "nsg-shr-pvt"
+    nsg_name                = "nsg-app-pvt"
     route_table_association = true
     subnet_type             = "private"
   },
   {
     name                    = "AzureFirewallSubnet"
     address_prefix          = "10.0.5.0/26"
-    nsg_name                = "nsg-shr-pvt"
+    nsg_name                = "nsg-app-pvt"
     route_table_association = false
     subnet_type             = "service"
   },
   {
     name                    = "AzureBastionSubnet"
     address_prefix          = "10.0.6.0/26"
-    nsg_name                = "nsg-shr-pvt"
+    nsg_name                = "nsg-app-pvt"
     route_table_association = false
     subnet_type             = "service"
   },
   {
     name                    = "AppGatewaySubnet"
     address_prefix          = "10.0.7.0/26"
-    nsg_name                = "nsg-shr-web"
+    nsg_name                = "nsg-app-web"
     route_table_association = false
     subnet_type             = "service"
   },
@@ -94,7 +94,7 @@ subnets = [
 
 nsgs = [
   {
-    name = "nsg-shr-web"
+    name = "nsg-app-web"
     security_rules = [
       {
         name                       = "AllowHTTP"
@@ -110,7 +110,7 @@ nsgs = [
     ]
   },
   {
-    name = "nsg-shr-app"
+    name = "nsg-app-app"
     security_rules = [
       {
         name                       = "AllowApp"
@@ -126,7 +126,7 @@ nsgs = [
     ]
   },
   {
-    name = "nsg-shr-db"
+    name = "nsg-app-db"
     security_rules = [
       {
         name                       = "AllowSql"
@@ -142,7 +142,7 @@ nsgs = [
     ]
   },
   {
-    name = "nsg-shr-pvt"
+    name = "nsg-app-pvt"
     security_rules = [
       {
         name                       = "AllowInternal"
@@ -197,8 +197,8 @@ vm_definitions = [
     image_version   = "latest"
   },
   {
-    name            = "sqlvm-shr-01"
-    computer_name   = "sqlvm-shr-01"
+    name            = "sqlvm-app-01"
+    computer_name   = "sqlvm-app-01"
     subnet_name     = "snet-db"
     vm_size         = "Standard_D4s_v3"
     admin_username  = "azureuser"

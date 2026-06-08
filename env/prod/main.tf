@@ -91,9 +91,9 @@ module "monitoring" {
 
 module "policy" {
   source                 = "../../modules/policy"
-  policy_definition_name = "pol-prd-baseline"
-  initiative_name        = "pol-prd-baseline"
-  assignment_name        = "pol-prd-baseline"
+  policy_definition_name = "pol-uat-baseline"
+  initiative_name        = "pol-uat-baseline"
+  assignment_name        = "pol-uat-baseline"
   scope                  = module.rg.id
 }
 
@@ -101,7 +101,7 @@ module "backup" {
   source               = "../../modules/backup"
   resource_group_name  = module.rg.name
   location             = var.location
-  recovery_vault_name  = "rsv-prd"
+  recovery_vault_name  = "rsv-uat"
   backup_policies      = var.backup_policies
   protected_vms        = local.backup_protected_vms
   asr_vault_name       = var.asr_vault_name
